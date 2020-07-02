@@ -259,6 +259,11 @@ if __name__ == '__main__':
     parser = ImageGPT.add_model_specific_args(parser)
     args = parser.parse_args()
 
+    model = ImageGPT()
+
+    x = ...
+    y_hat = model(x)
+
     if args.dataset == 'fashion_mnist':
         datamodule = FashionMNISTDataModule.from_argparse_args(args)
 

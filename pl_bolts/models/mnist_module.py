@@ -107,10 +107,11 @@ if __name__ == '__main__':  # pragma: no cover
     # args
     parser = ArgumentParser()
     parser = LitMNIST.add_model_specific_args(parser)
+    parser = Trainer.add_argparse_args(parser)
     args = parser.parse_args()
 
     # model
     model = LitMNIST(**vars(args))
 
-    trainer = Trainer()
+    trainer = Trainer.from_argparse_args(args)
     trainer.fit(model)
