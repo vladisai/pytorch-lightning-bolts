@@ -2,7 +2,7 @@ import os
 from argparse import ArgumentParser
 
 import torch
-from pytorch_lightning import LightningModule, Trainer
+from pytorch_lightning import LightningModule, Trainer, seed_everything
 from torch.nn import functional as F
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
@@ -103,6 +103,7 @@ class LitMNIST(LightningModule):
 
 
 if __name__ == '__main__':  # pragma: no cover
+    seed_everything(0)
 
     # args
     parser = ArgumentParser()
