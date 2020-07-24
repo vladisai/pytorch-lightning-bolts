@@ -235,7 +235,7 @@ if __name__ == '__main__':
 
     # no val loop... thus we condition on loss and always save the last
     checkpoint_cb = ModelCheckpoint(monitor='loss', save_last=True)
-    trainer = Trainer.from_argparse_args(
+    trainer = pl.Trainer.from_argparse_args(
         args,
         callbacks=callbacks,
         checkpoint_callback=checkpoint_cb
