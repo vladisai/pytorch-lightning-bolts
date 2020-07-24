@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 import numpy as np
 from pl_bolts.datamodules import FashionMNISTDataModule, ImagenetDataModule
 from pl_bolts.models.vision.image_gpt.gpt2 import GPT2
-from pl_bolts.datamodules import LightningDataModule
+from pytorch_lightning import LightningDataModule
 
 
 def _shape_input(x):

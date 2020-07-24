@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from collections import OrderedDict
 
 import torch
-from pytorch_lightning import Trainer, LightningModule, Callback
+import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from torch.nn import functional as F
 
@@ -12,7 +12,7 @@ from pl_bolts.models.gans.basic.components import Generator, Discriminator
 import os
 
 
-class GAN(LightningModule):
+class GAN(pl.LightningModule):
 
     def __init__(self,
                  datamodule: LightningDataModule = None,
@@ -78,6 +78,23 @@ class GAN(LightningModule):
     def init_discriminator(self, img_dim):
         discriminator = Discriminator(img_shape=img_dim)
         return discriminator
+
+    def training_step(self, batch, batch_idx, optimizer_idx):
+        x, _ = batch
+
+        # train generator
+        loss = None
+        if optimizer_idx == 0:
+            loss = self.generator_step(x)
+
+        # train discriminator
+        if optimizer_idx == 1:
+            loss = self.discriminator_step(x)
+
+        # train train_loss
+        result = pl.TrainResult(minimize=loss, checkpoint_on=loss)
+        result.log('train_loss', loss)
+        return result
 
     def forward(self, z):
         """
@@ -153,39 +170,12 @@ class GAN(LightningModule):
         })
         return output
 
-    def training_step(self, batch, batch_idx, optimizer_idx):
-        x, _ = batch
-
-        # train generator
-        result = None
-        if optimizer_idx == 0:
-            result = self.generator_step(x)
-
-        # train discriminator
-        if optimizer_idx == 1:
-            result = self.discriminator_step(x)
-
-        return result
-
-    def training_epoch_end(self, outputs):
-        loss = torch.mean(torch.stack([x['loss'] for x in outputs]))
-
-        result = {'log': {'train_epoch_loss': loss}}
-
-        return result
-
     def configure_optimizers(self):
         lr = self.hparams.learning_rate
 
         opt_g = torch.optim.Adam(self.generator.parameters(), lr=lr)
         opt_d = torch.optim.Adam(self.discriminator.parameters(), lr=lr)
         return [opt_g, opt_d], []
-
-    def prepare_data(self):
-        self.datamodule.prepare_data()
-
-    def train_dataloader(self):
-        return self.datamodule.train_dataloader(self.hparams.batch_size)
 
     @staticmethod
     def add_model_specific_args(parent_parser):
@@ -205,7 +195,7 @@ class GAN(LightningModule):
         return parser
 
 
-class ImageGenerator(Callback):
+class ImageGenerator(pl.Callback):
 
     def on_epoch_end(self, trainer, pl_module):
         import torchvision
@@ -224,7 +214,7 @@ if __name__ == '__main__':
     from pl_bolts.datamodules import ImagenetDataModule
 
     parser = ArgumentParser()
-    parser = Trainer.add_argparse_args(parser)
+    parser = pl.Trainer.add_argparse_args(parser)
     parser = GAN.add_model_specific_args(parser)
     parser = ImagenetDataModule.add_argparse_args(parser)
     args = parser.parse_args()
@@ -233,8 +223,12 @@ if __name__ == '__main__':
     datamodule = None
     if args.dataset == 'imagenet2012':
         datamodule = ImagenetDataModule.from_argparse_args(args)
+        datamodule.prepare_data()
+        datamodule.setup()
     elif args.dataset == 'stl10':
         datamodule = STL10DataModule.from_argparse_args(args)
+        datamodule.prepare_data()
+        datamodule.setup()
 
     gan = GAN(**vars(args), datamodule=datamodule)
     callbacks = [ImageGenerator(), LatentDimInterpolator()]

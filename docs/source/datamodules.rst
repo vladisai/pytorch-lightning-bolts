@@ -92,7 +92,7 @@ Use this to build your own consistent train, validation, test splits.
 
 Example::
 
-    from pl_bolts.datamodules import LightningDataModule
+    from pytorch_lightning import LightningDataModule
 
     class MyDataModule(LightningDataModule):
 
