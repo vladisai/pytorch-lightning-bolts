@@ -24,16 +24,30 @@ class SimCLRTrainDataTransform(object):
         x = sample()
         (xi, xj) = transform(x)
     """
-    def __init__(self, input_height, s=1):
+    def __init__(self, input_height, s=1, gaussian_blur=True, normalize=None):
         self.s = s
         self.input_height = input_height
+        self.gaussian_blur = gaussian_blur
+        self.normalize = normalize
+
         color_jitter = transforms.ColorJitter(0.8 * self.s, 0.8 * self.s, 0.8 * self.s, 0.2 * self.s)
-        data_transforms = transforms.Compose([transforms.RandomResizedCrop(size=self.input_height),
-                                              transforms.RandomHorizontalFlip(),
-                                              transforms.RandomApply([color_jitter], p=0.5),
-                                              transforms.RandomGrayscale(p=0.2),
-                                              GaussianBlur(kernel_size=int(0.1 * self.input_height)),
-                                              transforms.ToTensor()])
+
+        data_transforms = [
+            transforms.RandomResizedCrop(size=self.input_height),
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.RandomApply([color_jitter], p=0.8),
+            transforms.RandomGrayscale(p=0.2)
+        ]
+
+        if self.gaussian_blur:
+            data_transforms.append(GaussianBlur(kernel_size=int(0.1 * self.input_height)))
+    
+        data_transforms.append(transforms.ToTensor())
+
+        if self.normalize:
+            data_transforms.append(self.normalize)
+
+        data_transforms = transforms.Compose(data_transforms)
         self.train_transform = data_transforms
 
     def __call__(self, sample):
@@ -61,14 +75,26 @@ class SimCLREvalDataTransform(object):
         x = sample()
         (xi, xj) = transform(x)
     """
-    def __init__(self, input_height, s=1):
-        self.s = s
+    def __init__(self, input_height, normalize=None):
         self.input_height = input_height
+        self.normalize = normalize
+
+        data_transforms = [
+            transforms.Resize(self.input_height),
+            transforms.ToTensor()
+        ]
+
+        if self.normalize:
+            data_transforms.append(self.normalize)
+
+        """
         self.test_transform = transforms.Compose([
             transforms.Resize(input_height + 10, interpolation=3),
             transforms.CenterCrop(input_height),
             transforms.ToTensor(),
         ])
+        """
+        self.test_transform = transforms.Compose(data_transforms)
 
     def __call__(self, sample):
         transform = self.test_transform
