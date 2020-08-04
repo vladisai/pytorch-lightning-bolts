@@ -1,3 +1,5 @@
+from argparse import ArgumentParser
+
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -127,7 +129,6 @@ class LogisticRegression(pl.LightningModule):
 
 
 def run_cli():
-    from argparse import ArgumentParser
     pl.seed_everything(1234)
 
     # Example: Iris dataset in Sklearn (4 features, 3 class labels)
