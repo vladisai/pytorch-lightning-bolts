@@ -1,3 +1,5 @@
+from argparse import ArgumentParser
+
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -117,9 +119,7 @@ class LinearRegression(pl.LightningModule):
         return parser
 
 
-# todo: covert to CLI func and add test
-if __name__ == '__main__':  # pragma: no cover
-    from argparse import ArgumentParser
+def run_cli():
     pl.seed_everything(1234)
 
     # create dataset
@@ -140,3 +140,7 @@ if __name__ == '__main__':  # pragma: no cover
     # train
     trainer = pl.Trainer.from_argparse_args(args)
     trainer.fit(model, loaders.train_dataloader(args.batch_size), loaders.val_dataloader(args.batch_size))
+
+
+if __name__ == '__main__':
+    run_cli()
