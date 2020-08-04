@@ -214,8 +214,7 @@ class ImageGenerator(Callback):
         trainer.logger.experiment.add_image('gan_images', grid, global_step=trainer.global_step)
 
 
-# todo: covert to CLI func and add test
-if __name__ == '__main__':
+def run_cli():
     from pl_bolts.datamodules import ImagenetDataModule
 
     parser = ArgumentParser()
@@ -242,3 +241,7 @@ if __name__ == '__main__':
         checkpoint_callback=checkpoint_cb
     )
     trainer.fit(gan)
+
+
+if __name__ == '__main__':
+    run_cli()
