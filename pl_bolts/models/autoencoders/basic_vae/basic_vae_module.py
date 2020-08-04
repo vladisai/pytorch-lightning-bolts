@@ -250,8 +250,7 @@ class VAE(LightningModule):
         return parser
 
 
-# todo: covert to CLI func and add test
-if __name__ == '__main__':
+def run_cli():
     from pl_bolts.datamodules import ImagenetDataModule
     parser = ArgumentParser()
     parser.add_argument('--dataset', default='mnist', type=str)
@@ -277,3 +276,6 @@ if __name__ == '__main__':
     vae = VAE(**vars(args))
     trainer = Trainer.from_argparse_args(args)
     trainer.fit(vae)
+
+if __name__ == '__main__':
+    run_cli()
